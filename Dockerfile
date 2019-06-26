@@ -1,6 +1,7 @@
 FROM registry.svc.ci.openshift.org/openshift/release:golang-1.12 AS builder
 WORKDIR /go/src/github.com/jimmidyson/configmap-reload
 COPY . .
+ENV GOFLAGS="-mod=vendor"
 RUN make out/configmap-reload
 
 FROM  registry.svc.ci.openshift.org/openshift/origin-v4.0:base
