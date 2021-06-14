@@ -3,15 +3,39 @@ component: "Monitoring"
 reviewers:
 - brancz
 - squat
-- s-urbaniak
 - metalmatze
 - paulfantom
-- LiliC
+- simonpasquier
+- dgrisonnet
+- kakkoyun
+- slashpai
+- prashbnair
+- arajkumar
+- sthaha
+- PhilipGough
+- bison
+- fpetkovski
+- raptorsun
+- jan--f
 
 approvers:
 - brancz
 - squat
-- s-urbaniak
 - metalmatze
 - paulfantom
+- simonpasquier
+- dgrisonnet
+- kakkoyun
+- slashpai
+- prashbnair
+- arajkumar
+- sthaha
+- PhilipGough
+- bison
+- fpetkovski
+- raptorsun
+- jan--f
+
+emeritus_approvers:
+- s-urbaniak
 - LiliC
