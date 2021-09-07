@@ -1,11 +1,11 @@
 # Dockerfile used by OSBS and by prow CI.
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9 AS builder
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.10 AS builder
 WORKDIR /go/src/github.com/jimmidyson/configmap-reload
 COPY . .
 ENV GOFLAGS="-mod=vendor"
 RUN make out/configmap-reload
 
-FROM registry.ci.openshift.org/ocp/4.9:base
+FROM registry.ci.openshift.org/ocp/4.10:base
 LABEL io.k8s.display-name="OpenShift ConfigMap Reload" \
       io.k8s.description="This is a component reloads another process if a configured configmap volume is remounted." \
       io.openshift.tags="kubernetes" \
