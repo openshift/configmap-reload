@@ -1,9 +1,7 @@
 component: "Monitoring"
 
 reviewers:
-- squat
 - simonpasquier
-- dgrisonnet
 - slashpai
 - prashbnair
 - arajkumar
@@ -15,9 +13,7 @@ reviewers:
 - jan--f
 
 approvers:
-- squat
 - simonpasquier
-- dgrisonnet
 - slashpai
 - prashbnair
 - arajkumar
@@ -29,6 +25,8 @@ approvers:
 - jan--f
 
 emeritus_approvers:
+- squat
+- dgrisonnet
 - s-urbaniak
 - LiliC
 - brancz
