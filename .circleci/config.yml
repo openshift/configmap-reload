@@ -1,14 +1,20 @@
+version: 2.1
+
 job_defaults: &job_defaults
   working_directory: /go/src/github.com/jimmidyson/configmap-reload
 
   docker:
-  - image: golang:1.12.6
+  - image: golang:1.17
 
   environment: &env_defaults
   - CGO_ENABLED: "0"
   - GO111MODULE: "on"
 
-version: 2
+docker_job_defaults: &docker_job_defaults
+  <<: *job_defaults
+
+  docker:
+  - image: docker:20.10.12-git
 
 jobs:
   checkout_code:
@@ -37,7 +43,8 @@ jobs:
       - run:
           name: Build binary
 
-          command: make cross out/configmap-reload
+          command: |
+            make cross out/configmap-reload
 
       - persist_to_workspace:
           root: .
@@ -54,10 +61,7 @@ jobs:
           - /go/pkg/mod
 
   build_docker:
-    <<: *job_defaults
-
-    docker:
-    - image: docker:18.09.3-git
+    <<: *docker_job_defaults
 
     steps:
       - restore_cache:
@@ -65,7 +69,7 @@ jobs:
           - code-repo-{{ .Environment.CIRCLE_SHA1 }}-{{ .Environment.CIRCLE_TAG }}
 
       - setup_remote_docker:
-          version: 18.09.3
+          version: 20.10.11
 
       - attach_workspace:
           at: .
@@ -74,37 +78,38 @@ jobs:
           name: Build Docker image
           command: |
             apk add -U make bash
-            make docker GOOS=linux GOARCH=amd64 DOCKER_IMAGE_TAG=${CIRCLE_SHA1}
+            for arch in amd64 arm arm64 ppc64le s390x; do
+              make docker GOOS=linux GOARCH=${arch} DOCKER_IMAGE_TAG=${CIRCLE_SHA1}
+            done
 
       - run:
           name: Export Docker image
           command: |
-            docker save -o ./configmap-reload-docker.tar jimmidyson/configmap-reload:${CIRCLE_SHA1}
+            for arch in amd64 arm arm64 ppc64le s390x; do
+              docker save -o ./configmap-reload-docker-${arch}.tar jimmidyson/configmap-reload:${CIRCLE_SHA1}-${arch}
+            done
 
       - persist_to_workspace:
           root: .
           paths:
-          - configmap-reload-docker.tar
-
-      - store_artifacts:
-          path: ./configmap-reload-docker.tar
-          destination: configmap-reload-docker.tar
+          - configmap-reload-docker-*.tar
 
   push_docker:
-    <<: *job_defaults
-
-    docker:
-    - image: docker:18.09.3-git
+    <<: *docker_job_defaults
 
     steps:
+      - restore_cache:
+          keys:
+          - code-repo-{{ .Environment.CIRCLE_SHA1 }}-{{ .Environment.CIRCLE_TAG }}
+
       - setup_remote_docker:
-          version: 18.09.3
+          version: 20.10.11
 
       - attach_workspace:
           at: .
 
       - run:
-          name: Push Docker image
+          name: Push individual arch Docker images
           command: |
             if [ "${CIRCLE_PROJECT_USERNAME}" != "jimmidyson" ]; then
               echo "Skipping - this is not in origin repository"
@@ -114,11 +119,20 @@ jobs:
               echo "Missing Docker login information!!!"
               exit 1
             fi
-            docker load -q -i ./configmap-reload-docker.tar
             DOCKER_TAG=${CIRCLE_TAG:-latest}
-            docker tag jimmidyson/configmap-reload:${CIRCLE_SHA1} jimmidyson/configmap-reload:${DOCKER_TAG}
             docker login -u ${DOCKER_LOGIN} -p ${DOCKER_PASSWORD}
-            docker push jimmidyson/configmap-reload:${DOCKER_TAG}
+            for arch in amd64 arm arm64 ppc64le s390x; do
+              docker load -q -i ./configmap-reload-docker-${arch}.tar
+              docker tag jimmidyson/configmap-reload:${CIRCLE_SHA1}-${arch} jimmidyson/configmap-reload:${DOCKER_TAG}-${arch}
+              docker push jimmidyson/configmap-reload:${DOCKER_TAG}-${arch}
+            done
+
+      - run:
+          name: Push multiarch Docker image
+          command: |
+            apk add -U make bash curl
+            apk upgrade
+            make manifest-push DOCKER_IMAGE_TAG=${CIRCLE_TAG:-latest}
 
 workflows:
   version: 2
@@ -148,7 +162,7 @@ workflows:
         - build_docker
         filters:
           branches:
-            only: master
+            only: main
           tags:
             only:
               /v[0-9]+(\.[0-9]+)*/

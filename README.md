@@ -19,12 +19,18 @@ It is available as a Docker image at https://hub.docker.com/r/jimmidyson/configm
 Usage of ./out/configmap-reload:
   -volume-dir value
         the config map volume directory to watch for updates; may be used multiple times
+  -web.listen-address string
+    	  address to listen on for web interface and telemetry. (default ":9533")
+  -web.telemetry-path string
+    	  path under which to expose metrics. (default "/metrics")
   -webhook-method string
         the HTTP method url to use to send the webhook (default "POST")
   -webhook-status-code int
         the HTTP status code indicating successful triggering of reload (default 200)
   -webhook-url string
         the url to send a request to when the specified config map volume directory has been updated
+  -webhook-retries integer
+        the amount of times to retry the webhook reload request
 ```
 
 ### License
