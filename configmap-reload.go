@@ -23,6 +23,7 @@ var (
 	webhook           webhookFlag
 	webhookMethod     = flag.String("webhook-method", "POST", "the HTTP method url to use to send the webhook")
 	webhookStatusCode = flag.Int("webhook-status-code", 200, "the HTTP status code indicating successful triggering of reload")
+	webhookRetries    = flag.Int("webhook-retries", 1, "the amount of times to retry the webhook reload request")
 	listenAddress     = flag.String("web.listen-address", ":9533", "Address to listen on for web interface and telemetry.")
 	metricPath        = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 
@@ -114,21 +115,37 @@ func main() {
 							req.SetBasicAuth(userInfo.Username(), password)
 						}
 					}
-					resp, err := http.DefaultClient.Do(req)
-					if err != nil {
-						setFailureMetrics(h.String(), "client_request_do")
-						log.Println("error:", err)
-						continue
+
+					successfulReloadWebhook := false
+
+					for retries := *webhookRetries; retries != 0; retries-- {
+						log.Printf("performing webhook request (%d/%d)", retries, *webhookRetries)
+						resp, err := http.DefaultClient.Do(req)
+						if err != nil {
+							setFailureMetrics(h.String(), "client_request_do")
+							log.Println("error:", err)
+							time.Sleep(time.Second * 10)
+							continue
+						}
+						resp.Body.Close()
+						requestsByStatusCode.WithLabelValues(h.String(), strconv.Itoa(resp.StatusCode)).Inc()
+						if resp.StatusCode != *webhookStatusCode {
+							setFailureMetrics(h.String(), "client_response")
+							log.Println("error:", "Received response code", resp.StatusCode, ", expected", *webhookStatusCode)
+							time.Sleep(time.Second * 10)
+							continue
+						}
+
+						setSuccessMetrics(h.String(), begun)
+						log.Println("successfully triggered reload")
+						successfulReloadWebhook = true
+						break
 					}
-					resp.Body.Close()
-					requestsByStatusCode.WithLabelValues(h.String(), strconv.Itoa(resp.StatusCode)).Inc()
-					if resp.StatusCode != *webhookStatusCode {
-						setFailureMetrics(h.String(), "client_response")
-						log.Println("error:", "Received response code", resp.StatusCode, ", expected", *webhookStatusCode)
-						continue
+
+					if !successfulReloadWebhook {
+						setFailureMetrics(h.String(), "retries_exhausted")
+						log.Println("error:", "Webhook reload retries exhausted")
 					}
-					setSuccessMetrict(h.String(), begun)
-					log.Println("successfully triggered reload")
 				}
 			case err := <-watcher.Errors:
 				watcherErrors.Inc()
@@ -153,7 +170,7 @@ func setFailureMetrics(h, reason string) {
 	lastReloadError.WithLabelValues(h).Set(1.0)
 }
 
-func setSuccessMetrict(h string, begun time.Time) {
+func setSuccessMetrics(h string, begun time.Time) {
 	requestDuration.WithLabelValues(h).Set(time.Since(begun).Seconds())
 	successReloads.WithLabelValues(h).Inc()
 	lastReloadError.WithLabelValues(h).Set(0.0)
