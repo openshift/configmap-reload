@@ -3,26 +3,20 @@ component: "Monitoring"
 reviewers:
 - simonpasquier
 - slashpai
-- prashbnair
-- arajkumar
 - sthaha
-- PhilipGough
-- bison
-- fpetkovski
 - raptorsun
 - jan--f
+- JoaoBraveCoding
+- juanrh
 
 approvers:
 - simonpasquier
 - slashpai
-- prashbnair
-- arajkumar
 - sthaha
-- PhilipGough
-- bison
-- fpetkovski
 - raptorsun
 - jan--f
+- JoaoBraveCoding
+- juanrh
 
 emeritus_approvers:
 - squat
@@ -33,3 +27,8 @@ emeritus_approvers:
 - kakkoyun
 - metalmatze
 - paulfantom
+- prashbnair
+- arajkumar
+- PhilipGough
+- bison
+- fpetkovski
