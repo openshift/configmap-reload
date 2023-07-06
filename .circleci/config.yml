@@ -7,7 +7,7 @@ job_defaults: &job_defaults
   - image: golang:1.17
 
   environment: &env_defaults
-  - CGO_ENABLED: "0"
+  - CGO_ENABLED: "1"
   - GO111MODULE: "on"
 
 docker_job_defaults: &docker_job_defaults
