@@ -3,20 +3,20 @@ component: "Monitoring"
 reviewers:
 - simonpasquier
 - slashpai
-- sthaha
 - raptorsun
 - jan--f
-- JoaoBraveCoding
-- juanrh
+- rexagod
+- machine424
+- marioferh
 
 approvers:
 - simonpasquier
 - slashpai
-- sthaha
 - raptorsun
 - jan--f
-- JoaoBraveCoding
-- juanrh
+- rexagod
+- machine424
+- marioferh
 
 emeritus_approvers:
 - squat
@@ -32,3 +32,6 @@ emeritus_approvers:
 - PhilipGough
 - bison
 - fpetkovski
+- JoaoBraveCoding
+- sthaha
+- juanrh
