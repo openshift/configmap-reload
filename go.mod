@@ -1,6 +1,6 @@
 module github.com/jimmidyson/configmap-reload
 
-go 1.21
+go 1.22
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1
