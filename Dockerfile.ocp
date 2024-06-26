@@ -3,6 +3,7 @@ FROM registry.ci.openshift.org/ocp/builder:rhel-9-golang-1.22-openshift-4.17 AS 
 WORKDIR /go/src/github.com/jimmidyson/configmap-reload
 COPY . .
 ENV GOFLAGS="-mod=vendor"
+ENV CGO_ENABLED=1
 RUN make out/configmap-reload
 
 FROM registry.ci.openshift.org/ocp/4.17:base-rhel9
