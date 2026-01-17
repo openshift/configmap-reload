@@ -5,7 +5,7 @@ COPY . .
 ENV GOFLAGS="-mod=vendor"
 RUN make out/configmap-reload
 
-FROM registry.ci.openshift.org/ocp/4.22:base-rhel9
+FROM registry.ci.openshift.org/ocp/4.22:base-rhel9-minimal
 LABEL io.k8s.display-name="OpenShift ConfigMap Reload" \
       io.k8s.description="This is a component reloads another process if a configured configmap volume is remounted." \
       io.openshift.tags="kubernetes" \
